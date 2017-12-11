@@ -59,6 +59,19 @@
         </dd>
 
         <dt>
+            Tecnologies
+        </dt>
+
+        <dd>
+            @{
+                foreach (var tech in Model.Technologies) {
+                    @tech.TechnologyName
+                    <br />
+                }
+            }
+        </dd>
+
+        <dt>
             @Html.DisplayNameFor(model => model.YearsExperience)
         </dt>
 

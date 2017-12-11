@@ -58,3 +58,4 @@ c:\users\leandro\documents\visual studio 2015\Projects\Register\Register\bin\Ent
 c:\users\leandro\documents\visual studio 2015\Projects\Register\Register\obj\Debug\Register.Migrations.InitialCreate.resources
 c:\users\leandro\documents\visual studio 2015\Projects\Register\Register\obj\Debug\Register.csproj.GenerateResource.Cache
 c:\users\leandro\documents\visual studio 2015\Projects\Register\Register\obj\Debug\Register.Migrations.DataAnnotationsMetaData.resources
+c:\Users\leandro\Documents\Visual Studio 2015\Projects\Register\Register\obj\Debug\Register.Migrations.RangeYearsExperience.resources

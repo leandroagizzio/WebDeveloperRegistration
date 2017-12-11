@@ -38,8 +38,30 @@ namespace Register.Controllers
         }
 
         // GET: Developers/Create
-        public ActionResult Create()
-        {
+        public ActionResult Create() {
+            // load techs
+            var allTechs = db.Technologies;
+            var viewModelTech = new List<AssignedData>();
+            foreach (var techs in allTechs) {
+                viewModelTech.Add(new AssignedData {
+                    Id = techs.TechnologyId,
+                    Name = techs.TechnologyName,
+                    Assigned = false 
+                });
+            }
+            ViewBag.Technologies = viewModelTech;
+
+            //load stacks
+            var allStacks = db.Stacks;
+            var viewModelStack = new List<AssignedData>();
+            foreach (var stacks in allStacks) {
+                viewModelStack.Add(new AssignedData {
+                    Id = stacks.StackId,
+                    Name = stacks.StackName,
+                    Assigned = false
+                });
+            }
+            ViewBag.Stacks = viewModelStack;
             return View();
         }
 
@@ -48,16 +70,45 @@ namespace Register.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "DeveloperId,FirstName,LastName,Address,Email,Phone,DayOfBirth,YearsExperience,Comments")] Developer developer)
-        {
-            if (ModelState.IsValid)
-            {
+        public ActionResult Create([Bind(Include = "DeveloperId,FirstName,LastName,Address,Email,Phone,DayOfBirth,YearsExperience,Comments")] Developer developer, string[] selectedTechs, string[] selectedStacks) {
+            if (ModelState.IsValid) {
+
+                /* old 
+                // what was selected
+                var selectedTechsHS = new HashSet<string>(selectedTechs);
+                // iterate through saved technologies
+                foreach (var techs in db.Technologies) {
+                    // if tech selected exists
+                    if (selectedTechs.Contains(techs.TechnologyId.ToString())) {
+                        developer.Technologies.Add(techs);
+                    }
+                }*/
+                // call function <db> (selected input, db, developer)
+                getSelected<Technology>(selectedTechs, db.Technologies, developer);
+                getSelected<Stack>(selectedStacks, db.Stacks, developer);
+
                 db.Developers.Add(developer);
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
-
             return View(developer);
+        }
+
+        public void getSelected<T>(string[] sel, DbSet<T> db, Developer developer)
+            where T : class {
+            var selected = new HashSet<string>(sel);
+            foreach (var sels in db) {
+                if ((new Technology()).GetType() == typeof(T)) {
+                    if (selected.Contains(((Technology) (Object)sels).TechnologyId.ToString())) {
+                        developer.Technologies.Add((Technology)(Object)sels);
+                    }
+                }
+                if ((new Stack()).GetType() == typeof(T)) {
+                    if (selected.Contains(((Stack)(Object)sels).StackId.ToString())) {
+                        developer.Stacks.Add((Stack)(Object)sels);
+                    }
+                }
+            }
         }
 
         // GET: Developers/Edit/5

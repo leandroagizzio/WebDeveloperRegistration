@@ -69,7 +69,11 @@
             @Html.DisplayFor(modelItem => item.YearsExperience)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Stacs)
+            @{
+                foreach (var stack in item.Stacks) {
+                    @stack.StackName <br />
+                }
+            }
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.Comments)
