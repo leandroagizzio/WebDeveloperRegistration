@@ -72,7 +72,6 @@ namespace Register.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "DeveloperId,FirstName,LastName,Address,Email,Phone,DayOfBirth,YearsExperience,Comments")] Developer developer, string[] selectedTechs, string[] selectedStacks) {
             if (ModelState.IsValid) {
-
                 /* old 
                 // what was selected
                 var selectedTechsHS = new HashSet<string>(selectedTechs);
@@ -83,10 +82,14 @@ namespace Register.Controllers
                         developer.Technologies.Add(techs);
                     }
                 }*/
+                // old version
                 // call function <db> (selected input, db, developer)
-                getSelected<Technology>(selectedTechs, db.Technologies, developer);
-                getSelected<Stack>(selectedStacks, db.Stacks, developer);
+                //getSelected<Technology>(selectedTechs, db.Technologies, developer);
+                //getSelected<Stack>(selectedStacks, db.Stacks, developer);
 
+                getSelected(selectedTechs, db.Technologies, db.Technologies.Select(x => x.TechnologyId).ToList(), developer.Technologies);
+                getSelected(selectedStacks, db.Stacks, db.Stacks.Select(x => x.StackId).ToList(), developer.Stacks);
+                
                 db.Developers.Add(developer);
                 db.SaveChanges();
                 return RedirectToAction("Index");
@@ -94,7 +97,22 @@ namespace Register.Controllers
             return View(developer);
         }
 
-        public void getSelected<T>(string[] sel, DbSet<T> db, Developer developer)
+        // new version
+        // selected items, db, list of ids in db, collection to be added items
+        public void getSelected<T>(string[] sel, DbSet<T> db, List<int> dbList, ICollection<T> developer)
+            where T : class
+            {
+            var selected = new HashSet<string>(sel);
+            foreach (var dbItem in dbList) {
+                if (selected.Contains(dbItem.ToString())) {
+                    developer.Add(db.Find(dbItem));                    
+                }
+            }
+        }
+
+        /*old
+         * problem is that is static and need implementation for any new item
+         * public void getSelected<T>(string[] sel, DbSet<T> db, Developer developer)
             where T : class {
             var selected = new HashSet<string>(sel);
             foreach (var sels in db) {
@@ -109,7 +127,7 @@ namespace Register.Controllers
                     }
                 }
             }
-        }
+        }*/
 
         // GET: Developers/Edit/5
         public ActionResult Edit(int? id)
