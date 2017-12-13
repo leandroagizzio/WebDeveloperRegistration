@@ -39,32 +39,24 @@ namespace Register.Controllers
 
         // GET: Developers/Create
         public ActionResult Create() {
-            // load techs
-            var allTechs = db.Technologies;
-            var viewModelTech = new List<AssignedData>();
-            foreach (var techs in allTechs) {
-                viewModelTech.Add(new AssignedData {
-                    Id = techs.TechnologyId,
-                    Name = techs.TechnologyName,
-                    Assigned = false 
-                });
-            }
-            ViewBag.Technologies = viewModelTech;
+            
+            //load technologies
+            ViewBag.Technologies = db.Technologies.Select(x => new AssignedData {
+                Id = x.TechnologyId,
+                Name = x.TechnologyName,
+                Assigned = false
+            }).ToList<AssignedData>();
 
             //load stacks
-            var allStacks = db.Stacks;
-            var viewModelStack = new List<AssignedData>();
-            foreach (var stacks in allStacks) {
-                viewModelStack.Add(new AssignedData {
-                    Id = stacks.StackId,
-                    Name = stacks.StackName,
-                    Assigned = false
-                });
-            }
-            ViewBag.Stacks = viewModelStack;
+            ViewBag.Stacks = db.Stacks.Select(x => new AssignedData {
+                Id = x.StackId,
+                Name = x.StackName,
+                Assigned = false
+            }).ToList<AssignedData>();
+
             return View();
         }
-
+        
         // POST: Developers/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -100,8 +92,11 @@ namespace Register.Controllers
         // new version
         // selected items, db, list of ids in db, collection to be added items
         public void getSelected<T>(string[] sel, DbSet<T> db, List<int> dbList, ICollection<T> developer)
-            where T : class
-            {
+            where T : class {
+            // none selected
+            if (sel == null) {
+                return; 
+            }
             var selected = new HashSet<string>(sel);
             foreach (var dbItem in dbList) {
                 if (selected.Contains(dbItem.ToString())) {
