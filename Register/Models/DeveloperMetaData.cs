@@ -24,7 +24,7 @@ namespace Register.Models {
         public string Phone { get; set; }
         [Required]
         [DataType(DataType.Date)]
-        [DisplayFormat(DataFormatString = "{0:dd-MM-yyyy}", ApplyFormatInEditMode = true)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime DayOfBirth { get; set; }
         [Range(0,50, ErrorMessage = "Range 0-50")]
         public int YearsExperience { get; set; }

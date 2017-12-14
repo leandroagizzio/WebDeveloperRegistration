@@ -64,7 +64,7 @@ namespace Register.Controllers
                 Assigned = false
             }).ToList<AssignedData>();
         }
-
+        
         // POST: Developers/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -87,8 +87,8 @@ namespace Register.Controllers
                 //getSelected<Technology>(selectedTechs, db.Technologies, developer);
                 //getSelected<Stack>(selectedStacks, db.Stacks, developer);
 
-                getSelected(selectedTechs, db.Technologies, db.Technologies.Select(x => x.TechnologyId).ToList(), developer.Technologies);
-                getSelected(selectedStacks, db.Stacks, db.Stacks.Select(x => x.StackId).ToList(), developer.Stacks);
+                getSelected(selectedTechs, db.Technologies, developer.Technologies, (x => x.TechnologyId));
+                getSelected(selectedStacks, db.Stacks, developer.Stacks, (x => x.StackId));
                 
                 db.Developers.Add(developer);
                 db.SaveChanges();
@@ -99,13 +99,14 @@ namespace Register.Controllers
 
         // new version
         // selected items, db, list of ids in db, collection to be added items
-        private void getSelected<T>(string[] sel, DbSet<T> db, List<int> dbList, ICollection<T> developer)
-            where T : class {
+        private void getSelected<T>(string[] sel, DbSet<T> db, 
+                ICollection<T> developer, Func<T, int> condition) where T : class {
             // none selected
             if (sel == null) {
                 return; 
             }
             var selected = new HashSet<string>(sel);
+            var dbList = developer.Select(condition).ToList();
             foreach (var dbItem in dbList) {
                 if (selected.Contains(dbItem.ToString())) {
                     developer.Add(db.Find(dbItem));                    
@@ -147,10 +148,10 @@ namespace Register.Controllers
                 .Single();
             //AssignedTechs(developer);
             
-            ViewBag.Technologies = getAssignedData(developer.Technologies
-                .Select(x => x.TechnologyId).ToList(), loadTechnologies());
-            ViewBag.Stacks = getAssignedData(developer.Stacks
-                .Select(x => x.StackId).ToList(), loadStacks());
+            ViewBag.Technologies = getAssignedData<Technology>(developer.Technologies, 
+                (x => x.TechnologyId), loadTechnologies());
+            ViewBag.Stacks = getAssignedData<Stack>(developer.Stacks,
+                (x => x.StackId), loadStacks());
 
             if (developer == null) {
                 return HttpNotFound();
@@ -158,8 +159,10 @@ namespace Register.Controllers
             return View(developer);
         }
 
-        private List<AssignedData> getAssignedData(List<int> devList, List<AssignedData> dbList){
+        private List<AssignedData> getAssignedData<T>(ICollection<T> developer, 
+                Func<T, int> condition, List<AssignedData> dbList){
             var retorno = new List<AssignedData>();
+            var devList = developer.Select(condition).ToList();
             foreach (var dbItem in dbList) {
                 retorno.Add(new AssignedData {
                     Id = dbItem.Id,
