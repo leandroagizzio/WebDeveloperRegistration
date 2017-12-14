@@ -149,7 +149,7 @@ namespace Register.Controllers
             
             ViewBag.Technologies = getAssignedData(developer.Technologies
                 .Select(x => x.TechnologyId).ToList(), loadTechnologies());
-            ViewBag.Stack = getAssignedData(developer.Stacks
+            ViewBag.Stacks = getAssignedData(developer.Stacks
                 .Select(x => x.StackId).ToList(), loadStacks());
 
             if (developer == null) {
@@ -191,12 +191,13 @@ namespace Register.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         //public ActionResult Edit([Bind(Include = "DeveloperId,FirstName,LastName,Address,Email,Phone,DayOfBirth,YearsExperience,Comments")] Developer developer, string[] selectedTechs) {
-        public ActionResult Edit(int? id, string[] selectedTechs) {
+        public ActionResult Edit(int? id, string[] selectedTechs, string[] selectedStacks) {
             Developer devToUpdate = null; ;
             if (ModelState.IsValid) {
 
                 devToUpdate = db.Developers
                 .Include(d => d.Technologies)
+                .Include(d => d.Stacks)
                 .Where(d => d.DeveloperId == id)
                 .Single();
 
@@ -205,16 +206,52 @@ namespace Register.Controllers
                     "FirstName", "LastName", "Address", "Email", "Phone", "DayOfBirth", "YearsExperience"
                     , "Comments" });
 
+                //old
                 //UpdateDevTechs(selectedTechs, devToUpdate);
-                UpdateDevTechs(selectedTechs, devToUpdate);
+                UpdateDev<Technology>(db.Technologies, devToUpdate.Technologies, 
+                    (x => x.TechnologyId), selectedTechs);
 
+                UpdateDev<Stack>(db.Stacks, devToUpdate.Stacks,
+                    (x => x.StackId), selectedStacks);
+                
+                
                 db.Entry(devToUpdate).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
             return View(devToUpdate);
         }
+        
+        private void UpdateDev<T>(DbSet<T> db, ICollection<T> developer, Func<T, int> condition, string[] sel)
+            where T : class{
+            // none selected
+            if (sel == null) {
+                //developer = new List<T>();
+                developer.Clear();
+                return;
+            }
 
+            var devList = developer.Select(condition).ToList();
+            var dbList = db.Select(condition).ToList();
+            // selected in page
+            //var selected = new HashSet<string>(sel);
+            foreach (var dbItem in dbList) {
+                //if tech was selected
+                if (sel.Contains(dbItem.ToString())) {
+                    // if tech selected is not active on db
+                    if (!devList.Contains(dbItem)) {
+                        developer.Add(db.Find(dbItem));
+                    }
+                } else { // if tech was not selected
+                    // if tech not selected is active on db
+                    if (devList.Contains(dbItem)) {
+                        developer.Remove(db.Find(dbItem));
+                    }
+                }
+            }
+        }
+
+        /* old
         private void UpdateDevTechs(string[] selectedTechs, Developer devToUpdate) {
             // if none selected, create new empty
             if (selectedTechs == null) {
@@ -241,7 +278,7 @@ namespace Register.Controllers
                 }
             }
 
-        }
+        }*/
 
         // GET: Developers/Delete/5
         public ActionResult Delete(int? id)
