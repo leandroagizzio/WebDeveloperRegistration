@@ -71,7 +71,7 @@
                     <tr>
                         @{ 
                             int count = 0;
-                            List<Register.ViewModel.AssignedTechnologyData> techs = ViewBag.Technologies;
+                            List<Register.ViewModel.AssignedData> techs = ViewBag.Technologies;
                             foreach (var tech in techs) {
                                 if (count++ % 5 == 0) {
                                     @: </tr><tr>
@@ -79,9 +79,9 @@
                                 @: <td>
                                     <input type="checkbox" 
                                            name="selectedTechs"
-                                           value="@tech.TechnologyId"
+                                           value="@tech.Id"
                                            @(Html.Raw(tech.Assigned ? "checked=\"checked\"" : "")) />
-                                           @tech.TechName
+                                           @tech.Name
                                 @:</td>
                             }
                             @:</tr>

@@ -41,22 +41,30 @@ namespace Register.Controllers
         public ActionResult Create() {
             
             //load technologies
-            ViewBag.Technologies = db.Technologies.Select(x => new AssignedData {
+            ViewBag.Technologies = loadTechnologies();
+
+            //load stacks
+            ViewBag.Stacks = loadStacks();
+
+            return View();
+        }
+
+        private List<AssignedData> loadTechnologies() {
+            return db.Technologies.Select(x => new AssignedData {
                 Id = x.TechnologyId,
                 Name = x.TechnologyName,
                 Assigned = false
             }).ToList<AssignedData>();
+        }
 
-            //load stacks
-            ViewBag.Stacks = db.Stacks.Select(x => new AssignedData {
+        private List<AssignedData> loadStacks() {
+            return db.Stacks.Select(x => new AssignedData {
                 Id = x.StackId,
                 Name = x.StackName,
                 Assigned = false
             }).ToList<AssignedData>();
-
-            return View();
         }
-        
+
         // POST: Developers/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -91,7 +99,7 @@ namespace Register.Controllers
 
         // new version
         // selected items, db, list of ids in db, collection to be added items
-        public void getSelected<T>(string[] sel, DbSet<T> db, List<int> dbList, ICollection<T> developer)
+        private void getSelected<T>(string[] sel, DbSet<T> db, List<int> dbList, ICollection<T> developer)
             where T : class {
             // none selected
             if (sel == null) {
@@ -134,16 +142,35 @@ namespace Register.Controllers
             //Developer developer = db.Developers.Find(id);
             Developer developer = db.Developers
                 .Include(d => d.Technologies)
+                .Include(d => d.Stacks)
                 .Where(d => d.DeveloperId == id)
                 .Single();
-            AssignedTechs(developer);
-            if (developer == null)
-            {
+            //AssignedTechs(developer);
+            
+            ViewBag.Technologies = getAssignedData(developer.Technologies
+                .Select(x => x.TechnologyId).ToList(), loadTechnologies());
+            ViewBag.Stack = getAssignedData(developer.Stacks
+                .Select(x => x.StackId).ToList(), loadStacks());
+
+            if (developer == null) {
                 return HttpNotFound();
             }
             return View(developer);
         }
 
+        private List<AssignedData> getAssignedData(List<int> devList, List<AssignedData> dbList){
+            var retorno = new List<AssignedData>();
+            foreach (var dbItem in dbList) {
+                retorno.Add(new AssignedData {
+                    Id = dbItem.Id,
+                    Name = dbItem.Name,
+                    Assigned = devList.Contains(dbItem.Id)
+                });
+            }
+            return retorno;
+        }
+        /* old
+         * 
         private void AssignedTechs(Developer developer) {
             var allTechs = db.Technologies;
             var devTechs = new HashSet<int>(developer.Technologies.Select(x => x.TechnologyId));
@@ -156,7 +183,7 @@ namespace Register.Controllers
                 } );
             }
             ViewBag.Technologies = viewModel;
-        }
+        }*/
 
         // POST: Developers/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
