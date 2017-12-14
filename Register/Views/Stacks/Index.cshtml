@@ -19,8 +19,8 @@
 
 @foreach (var item in Model) {
     <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.StackName)
+        <td>            
+            @Html.ActionLink(item.StackName, "Index", "Developers", new { stack = item.StackName }, null)
         </td>
         <td>
             @Html.ActionLink("Edit", "Edit", new { id=item.StackId }) |

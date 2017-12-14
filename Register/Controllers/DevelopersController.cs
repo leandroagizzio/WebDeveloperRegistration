@@ -17,8 +17,17 @@ namespace Register.Controllers
         private RegisterDBContext db = new RegisterDBContext();
 
         // GET: Developers
-        public ActionResult Index()
-        {            
+        public ActionResult Index(string technology, string stack) {
+            var techs = db.Developers.Include(d => d.Technologies);
+            if (!String.IsNullOrEmpty(technology)) {
+                return View(
+                    techs.Where(d => d.Technologies.Any(x => x.TechnologyName == technology)).ToList());
+            }
+            var stacks = db.Developers.Include(d => d.Stacks);
+            if (!String.IsNullOrEmpty(stack)) {
+                return View(
+                    stacks.Where(d => d.Stacks.Any(x => x.StackName == stack)).ToList());
+            }
             return View(db.Developers.ToList());
         }
 
